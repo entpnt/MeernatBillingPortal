@@ -4,6 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import LoginPage from "./components/LoginPage";
 import ProtectedDashboard from "./components/ProtectedDashboard";
 import routes from "tempo-routes";
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   const { isSignedIn, isLoaded } = useUser();
@@ -30,6 +31,7 @@ function App() {
           />
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+        <Toaster />
       </>
     </Suspense>
   );

@@ -7,6 +7,7 @@ import {
   Search,
   ChevronUp,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -62,6 +63,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useServiceProviderSettings } from "@/hooks/useServiceProviderSettings";
+import { useToast } from "@/components/ui/use-toast";
 
 interface NetworkOperator {
   id: string;
@@ -243,14 +246,15 @@ const ServiceProviderView: React.FC<ServiceProviderViewProps> = ({
 
   // Settings state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settingsData, setSettingsData] = useState({
-    providerName: providerName,
-    logo: providerLogo,
-    location: "New York, NY",
-    phoneNumber: "+1 (555) 123-4567",
-    email: "contact@noodlefiber.com",
-    website: "https://www.noodlefiber.com",
-  });
+  const { toast } = useToast();
+  const {
+    settings,
+    isLoading: settingsLoading,
+    isSaving: settingsSaving,
+    error: settingsError,
+    saveSettings,
+    updateSetting,
+  } = useServiceProviderSettings();
 
   // Filter and sort products
   const filteredProducts = products.filter((product) => {
@@ -535,15 +539,14 @@ const ServiceProviderView: React.FC<ServiceProviderViewProps> = ({
         <div className="flex items-center gap-4">
           <div className="relative">
             <div
-              className={`h-16 w-16 rounded-full p-1 ${
-                providerName === "Noodle Fiber"
-                  ? "bg-purple-500"
-                  : providerName === "Podunk Fiber"
-                    ? "bg-yellow-500"
-                    : providerName === "Fiddle Faddle Fiber"
-                      ? "bg-lime-500"
-                      : "bg-purple-500"
-              }`}
+              className={`h-16 w-16 rounded-full p-1 ${providerName === "Noodle Fiber"
+                ? "bg-purple-500"
+                : providerName === "Podunk Fiber"
+                  ? "bg-yellow-500"
+                  : providerName === "Fiddle Faddle Fiber"
+                    ? "bg-lime-500"
+                    : "bg-purple-500"
+                }`}
             >
               <div className="h-full w-full bg-black rounded-full flex items-center justify-center">
                 <img
@@ -857,239 +860,232 @@ const ServiceProviderView: React.FC<ServiceProviderViewProps> = ({
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <div className="grid gap-6">
-            {/* Branding Info Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Branding Information</CardTitle>
-                <CardDescription>
-                  Manage your company branding and visual identity
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="provider-name">
-                        Service Provider Name
-                      </Label>
-                      <Input
-                        id="provider-name"
-                        value={settingsData.providerName}
-                        onChange={(e) =>
-                          setSettingsData((prev) => ({
-                            ...prev,
-                            providerName: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter your company name"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="logo-upload">Company Logo</Label>
-                      <div className="mt-2 space-y-3">
-                        <div className="flex items-center gap-4">
-                          <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-full">
-                            <img
-                              src="/meernatlogo.png"
-                              alt="Logo"
-                              className="h-5 w-5 object-contain"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <Input
-                              id="logo-upload"
-                              type="file"
-                              accept="image/*"
-                              className="cursor-pointer"
-                            />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Upload a square image (recommended: 200x200px)
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-3">Preview</h4>
-                    <div className="space-y-3">
-                      <div className="bg-background p-3 rounded border">
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Dashboard Header
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <div
-                              className={`h-8 w-8 rounded-full p-0.5 ${
-                                settingsData.providerName === "Noodle Fiber"
-                                  ? "bg-purple-500"
-                                  : settingsData.providerName === "Podunk Fiber"
-                                    ? "bg-yellow-500"
-                                    : settingsData.providerName ===
-                                        "Fiddle Faddle Fiber"
-                                      ? "bg-lime-500"
-                                      : "bg-purple-500"
-                              }`}
-                            >
-                              <div className="h-full w-full bg-black rounded-full flex items-center justify-center">
-                                <img
-                                  src="/meernatlogo.png"
-                                  alt={settingsData.providerName || "Logo"}
-                                  className="h-5 w-5 object-contain"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-sm font-medium">
-                            {settingsData.providerName}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="bg-background p-3 rounded border">
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Subscriber View
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <div
-                              className={`h-8 w-8 rounded-full p-0.5 ${
-                                settingsData.providerName === "Noodle Fiber"
-                                  ? "bg-purple-500"
-                                  : settingsData.providerName === "Podunk Fiber"
-                                    ? "bg-yellow-500"
-                                    : settingsData.providerName ===
-                                        "Fiddle Faddle Fiber"
-                                      ? "bg-lime-500"
-                                      : "bg-purple-500"
-                              }`}
-                            >
-                              <div className="h-full w-full bg-black rounded-full flex items-center justify-center">
-                                <img
-                                  src="/meernatlogo.png"
-                                  alt={settingsData.providerName}
-                                  className="h-5 w-5 object-contain"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {settingsData.providerName}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Service Provider
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Contact Info Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-                <CardDescription>
-                  Manage your company contact details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={settingsData.location}
-                        onChange={(e) =>
-                          setSettingsData((prev) => ({
-                            ...prev,
-                            location: e.target.value,
-                          }))
-                        }
-                        placeholder="City, State/Country"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={settingsData.phoneNumber}
-                        onChange={(e) =>
-                          setSettingsData((prev) => ({
-                            ...prev,
-                            phoneNumber: e.target.value,
-                          }))
-                        }
-                        placeholder="+1 (555) 123-4567"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={settingsData.email}
-                        onChange={(e) =>
-                          setSettingsData((prev) => ({
-                            ...prev,
-                            email: e.target.value,
-                          }))
-                        }
-                        placeholder="contact@company.com"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="website">Website URL</Label>
-                      <Input
-                        id="website"
-                        type="url"
-                        value={settingsData.website}
-                        onChange={(e) =>
-                          setSettingsData((prev) => ({
-                            ...prev,
-                            website: e.target.value,
-                          }))
-                        }
-                        placeholder="https://www.company.com"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <Button
-                size="lg"
-                onClick={() => {
-                  // Here you would typically save to backend
-                  console.log("Saving settings:", settingsData);
-                  // Show success message
-                }}
-              >
-                Save Changes
-              </Button>
+          {settingsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="ml-2">Loading settings...</span>
             </div>
-          </div>
+          ) : (
+            <div className="grid gap-6">
+              {settingsError && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                  <p className="text-destructive text-sm">{settingsError}</p>
+                </div>
+              )}
+              {/* Branding Info Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Branding Information</CardTitle>
+                  <CardDescription>
+                    Manage your company branding and visual identity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="provider-name">
+                          Service Provider Name
+                        </Label>
+                        <Input
+                          id="provider-name"
+                          value={settings.name}
+                          onChange={(e) =>
+                            updateSetting('name', e.target.value)
+                          }
+                          placeholder="Enter your company name"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="logo-upload">Company Logo</Label>
+                        <div className="mt-2 space-y-3">
+                          <div className="flex items-center gap-4">
+                            <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-full">
+                              <img
+                                src="/meernatlogo.png"
+                                alt="Logo"
+                                className="h-5 w-5 object-contain"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <Input
+                                id="logo-upload"
+                                type="file"
+                                accept="image/*"
+                                className="cursor-pointer"
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Upload a square image (recommended: 200x200px)
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <h4 className="font-medium mb-3">Preview</h4>
+                      <div className="space-y-3">
+                        <div className="bg-background p-3 rounded border">
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Dashboard Header
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <div className="h-8 w-8 rounded-full p-0.5 bg-purple-500">
+                                <div className="h-full w-full bg-black rounded-full flex items-center justify-center">
+                                  <img
+                                    src={settings.logo_url || "/meernatlogo.png"}
+                                    alt={settings.name || "Logo"}
+                                    className="h-5 w-5 object-contain"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-sm font-medium">
+                              {settings.name || "Your Company Name"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-background p-3 rounded border">
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Subscriber View
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <div className="h-8 w-8 rounded-full p-0.5 bg-purple-500">
+                                <div className="h-full w-full bg-black rounded-full flex items-center justify-center">
+                                  <img
+                                    src={settings.logo_url || "/meernatlogo.png"}
+                                    alt={settings.name || "Logo"}
+                                    className="h-5 w-5 object-contain"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">
+                                {settings.name || "Your Company Name"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Service Provider
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Contact Info Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                  <CardDescription>
+                    Manage your company contact details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={settings.location || ''}
+                          onChange={(e) =>
+                            updateSetting('location', e.target.value)
+                          }
+                          placeholder="City, State/Country"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          value={settings.phone_number || ''}
+                          onChange={(e) =>
+                            updateSetting('phone_number', e.target.value)
+                          }
+                          placeholder="+1 (555) 123-4567"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={settings.email || ''}
+                          onChange={(e) =>
+                            updateSetting('email', e.target.value)
+                          }
+                          placeholder="contact@company.com"
+                          className="mt-1"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="website">Website URL</Label>
+                        <Input
+                          id="website"
+                          type="url"
+                          value={settings.website_url || ''}
+                          onChange={(e) =>
+                            updateSetting('website_url', e.target.value)
+                          }
+                          placeholder="https://www.company.com"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Save Button */}
+              <div className="flex justify-end">
+                <Button
+                  size="lg"
+                  onClick={async () => {
+                    const result = await saveSettings(settings);
+                    if (result.success) {
+                      toast({
+                        title: "Settings saved",
+                        description: "Your service provider settings have been updated successfully.",
+                      });
+                    } else {
+                      toast({
+                        title: "Error saving settings",
+                        description: "There was an error saving your settings. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={settingsSaving}
+                >
+                  {settingsSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

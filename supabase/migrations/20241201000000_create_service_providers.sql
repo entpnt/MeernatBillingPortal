@@ -154,47 +154,11 @@ CREATE TRIGGER update_network_operators_updated_at
     BEFORE UPDATE ON network_operators 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Enable Row Level Security (RLS)
-ALTER TABLE service_providers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE network_operators ENABLE ROW LEVEL SECURITY;
-ALTER TABLE product_network_operators ENABLE ROW LEVEL SECURITY;
-
--- Create RLS policies (basic policies - adjust based on your auth requirements)
-CREATE POLICY "Service providers are viewable by everyone" ON service_providers
-    FOR SELECT USING (true);
-
-CREATE POLICY "Service providers are insertable by authenticated users" ON service_providers
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Service providers are updatable by owner" ON service_providers
-    FOR UPDATE USING (auth.uid()::text = id::text);
-
-CREATE POLICY "Products are viewable by everyone" ON products
-    FOR SELECT USING (true);
-
-CREATE POLICY "Products are insertable by authenticated users" ON products
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Products are updatable by service provider owner" ON products
-    FOR UPDATE USING (
-        EXISTS (
-            SELECT 1 FROM service_providers sp 
-            WHERE sp.id = products.service_provider_id 
-            AND sp.id::text = auth.uid()::text
-        )
-    );
-
-CREATE POLICY "Network operators are viewable by everyone" ON network_operators
-    FOR SELECT USING (true);
-
-CREATE POLICY "Network operators are insertable by authenticated users" ON network_operators
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Product network operators are viewable by everyone" ON product_network_operators
-    FOR SELECT USING (true);
-
-CREATE POLICY "Product network operators are insertable by authenticated users" ON product_network_operators
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+-- For development, we'll disable RLS to allow full access
+-- In production, you'd want to set up proper RLS policies with Clerk integration
+ALTER TABLE service_providers DISABLE ROW LEVEL SECURITY;
+ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE network_operators DISABLE ROW LEVEL SECURITY;
+ALTER TABLE product_network_operators DISABLE ROW LEVEL SECURITY;
 
  
